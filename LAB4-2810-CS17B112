@@ -1,0 +1,528 @@
+#include <cmath>
+#include <cstdio>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <string>
+#include <cstring>
+using namespace std;
+
+//class has the details of a particular book entry
+class Book
+{
+  public:
+    
+    string title;
+    string author;
+    long year;
+    float price;
+    
+    //pointer to the next book in the shelf    
+    Book* next;
+    
+    //constructor
+    Book()
+    {
+        next=NULL;
+    }
+};
+
+//class contains functions common to both vertical and horizontal shelves
+class Bookshelf
+{
+    public:
+    
+    Book *B;
+    Book *Verticaltop;
+    Book *Horizontalstart;
+    Book *Horizontalend;
+    
+    //constructor
+     Bookshelf()
+    {
+        Verticaltop = NULL;
+        Horizontalend = NULL;
+        Horizontalstart = NULL;
+    }
+    
+    //function common to both the shelves
+    void display(Book *B)
+    {
+        cout<<B->title<<",";
+        cout<<B->author<<",";
+        cout<<B->year<<",";
+        cout<<B->price<<"\n";
+    }
+    
+    //function gets overridden by methods of derived classes
+    void addBook()
+    {
+        cout<<"addBook Inside Bookshelf";
+    }
+    
+    //function gets overridden by methods of derived classes
+    void removeBook()
+    {
+        cout<<"removeBook Inside Bookshelf";
+    }
+    
+    //function gets overridden by methods of derived classes
+    void checkEmpty()
+    {
+        cout<<"checkEmpty Inside Bookshelf";
+    }
+    
+    //function gets overridden by methods of derived classes
+    void list()
+    {
+        cout<<"list Inside Bookshelf";
+    }
+    
+    //function gets overridden by methods of derived classes
+    void findcheap()
+    {
+        cout<<"findcheap Inside Bookshelf";
+    }   
+};
+
+//class containing vertical shelf inheriting publicly from Bookshelf
+class verticalbs: public Bookshelf
+{
+    public:
+    
+    //constructor
+    verticalbs()
+    {
+    
+    }
+    
+    //to add books in vertical shelf
+    void addBook()
+    {
+        B=new Book();
+        cin>>B->title;
+        cin>>B->author;
+        cin>>B->year;
+        cin>>B->price;
+       // display(B);
+        if(Verticaltop!=NULL)
+        B->next=Verticaltop;
+        Verticaltop=B;
+        return;
+    }
+    
+    //to remove books from vertical shelf
+     void removeBook(int n)
+    {
+        B=new Book;
+        while(n>0)
+        {
+            if(checkEmpty())
+                {
+                    cout<<"e";
+                    return;
+                }
+            else
+                {
+                    B=Verticaltop;
+                    if((Verticaltop->next)!=NULL)
+                    Verticaltop=Verticaltop->next;
+                    else
+                    Verticaltop=NULL;
+                    delete B;
+                }
+             n--;
+        }
+    }
+    
+    //checks if vertical shelf is empty
+    bool checkEmpty()
+    {
+        if (Verticaltop==NULL)
+            return 1;
+        else return 0;
+    }
+    
+    //temporary stack 
+    Book *tempstack;
+   
+  //lists out contents of the vertical shelf
+  void list()
+    {   
+        Book* temp=Verticaltop;  
+        if(temp == NULL)
+        {
+            cout << "e" << endl;
+            return;
+        }
+        while(temp!=NULL)
+        {           
+            display(temp);
+            temp=temp->next;
+        }
+    }
+    
+    //pushes book B into the stack passed
+    void pushing(Book* B, Book* stack)
+    {
+        if(stack==NULL)
+            stack=B;
+        else
+        {
+            B->next=stack;
+            stack=B;
+        }
+    }
+    
+    //finds the cheapest book before every book
+    void findCheap()
+    {
+        int cheap=Verticaltop->price;
+        B=new Book;
+        int flag=0;
+        if (checkEmpty())
+            {
+                cout<<"e";
+                return;
+            }
+        else
+            {
+                while(!checkEmpty())
+                {
+                    if(Verticaltop->price<cheap)
+                        {
+                            flag=1;
+                            cout<<Verticaltop->price<<",";
+                            cheap=Verticaltop->price;
+                        }
+                    else  
+                        {  
+                            if(flag==0)
+                            cout<<"-1,";
+                            else 
+                            cout<<cheap<<",";
+                        }
+                   
+                    B=Verticaltop;
+                    pushing(B,tempstack);
+                    removeBook(1);
+                }
+                cout<<"\n";
+                while(tempstack!=NULL)
+                {
+                    B=tempstack;
+                    pushing(B,Verticaltop);
+                    tempstack=tempstack->next;
+                    delete B;            
+                }
+            }
+    }
+    
+    //temporary stack
+    Book *tempstack2;
+    
+    //reverses the order of books in the shelf removing duplicates from it
+    void reverseUnique()
+    {
+        while(Verticaltop!=NULL)
+         {
+           B=Verticaltop;
+           if((B->title==tempstack->title)&&(B->author==tempstack->author))
+                if((B->price==tempstack->price)&&(B->year==tempstack->year))
+                        {
+                            Verticaltop=Verticaltop->next;
+                            delete B;                       
+                        }
+           else
+              { 
+                pushing(B,tempstack);
+                Verticaltop=Verticaltop->next;
+                delete B; 
+              }
+         }
+        while(tempstack!=NULL)
+                {
+                    B=tempstack;
+                    pushing(B,tempstack2);
+                    tempstack=tempstack->next;
+                    delete B;            
+                }
+        while(tempstack2!=NULL)
+                {
+                    B=tempstack2;
+                    pushing(B,Verticaltop);
+                    tempstack2=tempstack2->next;
+                    delete B;            
+                }        
+    }
+};
+
+//class containing horizontal shelf inheriting publicly from Bookshelf
+class horizontalbs: public Bookshelf
+{
+    public:
+    
+     //constructor
+    horizontalbs()
+    {
+    
+    }
+    
+    //to add books in horizontal shelf
+    void addBook()
+    {
+        B=new Book();
+        cin>>B->title;
+        cin>>B->author;
+        cin>>B->year;
+        cin>>B->price;
+        display(B);
+        if(Horizontalend!=NULL)
+        Horizontalend->next=B;
+        B->next=NULL;
+        Horizontalend=B;
+        //cout << "hhj";
+        return;
+    }
+    
+    //to remove books from horizontal shelf
+   void removeBook(int n)
+    {
+        while(n>0)
+        {
+            if(checkEmpty())
+                {
+                    cout<<"e";
+                    return;
+                }
+            else
+                {
+                    B=Horizontalstart;
+                    Horizontalstart=Horizontalstart->next;
+                    delete B;
+                }
+             n--;
+        }
+    }
+    
+    //checks if the horizontal stack is empty
+    bool checkEmpty()
+    {
+        if (Horizontalstart==NULL)
+            return 1;
+        else return 0;
+    }    
+    
+    Book *tempqueuefront;
+    Book *tempqueueback;
+  
+    //lists out contents of the horizontal shelf
+  void list()
+    {   
+    cout << "x";
+        Book* temp =Horizontalstart;   
+        cout << temp->price;
+        display(temp);
+        if(temp==NULL)
+        {
+            cout << "e" << endl;
+            return;
+        }
+        while(temp!=NULL)
+        {           
+            display(temp);
+            temp=temp->next;
+        }
+    }
+   
+    //pushes book B into the queue passed
+   void pushing(Book* B, Book* queueback, Book *queuefront)
+    {
+        if(queueback==NULL)
+            queueback=queuefront=B;
+        else
+        {
+            queueback->next=B;
+            queueback=B;
+        }
+    }
+    
+    //finds the cheapest book before every book in the queue
+    void findCheap()
+    {
+        int cheap=Horizontalstart->price;
+        int flag=0;
+        if (checkEmpty())
+            {
+                cout<<"e";
+                return;
+            }
+        else
+            {
+                while(!checkEmpty())
+                {
+                    if(Horizontalstart->price<cheap)
+                        {
+                            flag=1;
+                            cout<<Horizontalstart->price<<",";
+                            cheap=Horizontalstart->price;
+                        }
+                    else  
+                        {  
+                            if(flag==0)
+                            cout<<"-1,";
+                            else 
+                            cout<<cheap<<",";
+                        }
+                   
+                    B=Horizontalstart;
+                    pushing(B,tempqueueback,tempqueuefront);
+                    removeBook(1);
+                }
+                cout<<"\n";
+                while(tempqueuefront!=NULL)
+                {
+                    B=tempqueuefront;
+                    pushing(B,Horizontalend,Horizontalstart);
+                    tempqueuefront=tempqueuefront->next;
+                    delete B;            
+                }
+            }
+    }
+    
+    //overloaded pushing function into the stack passed
+        void pushing(Book* B, Book* stack)
+    {
+        if(stack==NULL)
+            stack=B;
+        else
+        {
+            B->next=stack;
+            stack=B;
+        }
+    }
+    
+    //temporary stack required for reversing
+    Book* tempstack;
+         
+    //reverses the order of books in the shelf removing duplicates from it    
+       void reverseUnique()
+    {
+        while(Horizontalstart!=NULL)
+         {
+           B=Horizontalstart;
+           if((B->title==tempstack->title)&&(B->author==tempstack->author))
+                if((B->price==tempstack->price)&&(B->year==tempstack->year))
+                        {
+                            Horizontalstart=Horizontalstart->next;
+                            delete B;                       
+                        }
+           else
+              { 
+                pushing(B,tempstack);
+                Horizontalstart=Horizontalstart->next;
+                delete B; 
+              }
+         } 
+         
+        while(tempstack!=NULL)
+                {
+                    B=tempstack;
+                    pushing(B,Horizontalend,Horizontalstart);
+                    tempstack=tempstack->next;
+                    delete B;            
+                }
+    }
+
+};
+
+
+int main() {
+    
+    int Q,n;
+    string bs;
+    string opcode;
+    verticalbs V;
+    horizontalbs H;
+    
+    cin>>Q;
+    
+    while(Q>0)
+    {
+        cin>>opcode;
+       
+            if(opcode=="REMOVE")
+        {
+            cin>>n>>bs;
+            if(bs=="v")
+            {
+                V.removeBook(n);
+            }
+            else if(bs == "h")
+            {
+                H.removeBook(n);
+            }          
+        }
+        
+         
+        else if(opcode=="ADD")
+        {
+            cin>>bs;
+            if(bs=="v")
+            { 
+                V.addBook();
+            }
+            else if(bs=="h")
+            { 
+                H.addBook();
+            } 
+        }
+         
+          else if(opcode=="LIST")
+        {
+            cin >> bs;
+             if(bs=="v")
+            {
+                V.list();
+            }
+            else if(bs =="h")
+            {
+                cout << "x";
+                H.list();
+            }   
+            
+        }
+         
+         else  if(opcode=="FINDC")
+        {
+            cin>>bs;
+             
+            if ( bs=="v" )
+            {
+              V.findCheap();
+            }
+            else if(bs=="h")
+            {
+              H.findCheap();
+            }       
+        }
+         
+          else  if(opcode=="REVUNI")
+        {
+            cin>>bs;
+             if(bs=="v")
+            {
+                V.reverseUnique();
+            }
+            else if(bs=="h")
+            {
+                H.reverseUnique();
+            }       
+            
+        }
+        Q--;
+    }
+    
+    /* Enter your code here. Read input from STDIN. Print output to STDOUT */   
+    return 0;
+}
